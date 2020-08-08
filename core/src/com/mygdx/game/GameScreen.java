@@ -1,5 +1,7 @@
 package com.mygdx.game;
 
+import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Input;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.graphics.OrthographicCamera;
@@ -75,7 +77,7 @@ public class GameScreen implements Screen {
 
 
         // create ships
-        playerShip = new PlayerShip(2, 3, WORLD_WIDTH/2, WORLD_HEIGHT/4, 10, 10, playerShipTextureRegion,playerShieldTextureRegion, playerLaserTextureRegion, 0.4f,4f, 45, 0.5f );
+        playerShip = new PlayerShip(48, 3, WORLD_WIDTH/2, WORLD_HEIGHT/4, 10, 10, playerShipTextureRegion,playerShieldTextureRegion, playerLaserTextureRegion, 0.4f,4f, 45, 0.5f );
         enemyShip = new EnemyShip(2, 1, WORLD_WIDTH/2, WORLD_HEIGHT*3/4, 10, 10, enemyShipTextureRegion,enemyShieldTextureRegion, enemyLaserTextureRegion, 0.3f,5f, 50, 0.8f );
 
         playerLaserList = new LinkedList<>();
@@ -95,7 +97,10 @@ public class GameScreen implements Screen {
     public void render(float delta) {
         spriteBatch.begin();
         // scrolling background
+        detectInput(delta);
+
         renderBackground(delta);
+
 
         playerShip.update(delta);
         enemyShip.update(delta);
@@ -114,6 +119,41 @@ public class GameScreen implements Screen {
         detectCollision();
 
         spriteBatch.end();
+    }
+
+    private void detectInput(float delta) {
+
+        float leftLimit, rightLimit, upLimit, downLimit;
+        leftLimit = - playerShip.boundingBox.x;
+        downLimit = - playerShip.boundingBox.y;
+        rightLimit = WORLD_WIDTH - playerShip.boundingBox.x -playerShip.boundingBox.width;
+        upLimit = WORLD_HEIGHT / 2 - playerShip.boundingBox.y - playerShip.boundingBox.height;
+
+        if(Gdx.input.isKeyPressed(Input.Keys.RIGHT) && rightLimit > 0  ){
+            System.out.println("clicked");
+            float xChange = playerShip.movementSpeed*delta;
+            xChange = Math.min(xChange, rightLimit);
+            playerShip.translate(xChange, 0f);
+        }
+
+        if(Gdx.input.isKeyPressed(Input.Keys.UP) && upLimit > 0  ){
+            float yChange = playerShip.movementSpeed*delta;
+            yChange = Math.min(yChange, rightLimit);
+            playerShip.translate(0f, yChange);
+        }
+
+        if(Gdx.input.isKeyPressed(Input.Keys.LEFT) && leftLimit < 0  ){
+            float xChange = -playerShip.movementSpeed*delta;
+            xChange = Math.max(xChange, leftLimit);
+            playerShip.translate(xChange, 0f);
+        }
+
+        if(Gdx.input.isKeyPressed(Input.Keys.DOWN) && downLimit < 0  ){
+            float yChange = -playerShip.movementSpeed*delta;
+            yChange = Math.max(yChange, downLimit);
+            playerShip.translate(0f, yChange);
+        }
+
     }
 
     private void detectCollision() {

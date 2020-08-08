@@ -50,6 +50,10 @@ public abstract class Ship {
             timeSinceLastShot += deltaTime;
     }
 
+    public void translate(float xChange, float yChange){
+        boundingBox.setPosition(boundingBox.x+xChange, boundingBox.y+yChange);
+    }
+
     public boolean canFireLaser(){
         return  timeSinceLastShot - timeBetweenTheShots >= 0 ;
     }
