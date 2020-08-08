@@ -10,6 +10,9 @@ import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.utils.viewport.StretchViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 
+import java.util.LinkedList;
+import java.util.ListIterator;
+
 public class GameScreen implements Screen {
 
     // screen
@@ -32,6 +35,11 @@ public class GameScreen implements Screen {
     // world parameter
     private final int WORLD_WIDTH = 72;
     private final int WORLD_HEIGHT = 128 ;
+
+    // lasers
+    LinkedList<Laser> playerLaserList ;
+    LinkedList<Laser> enemyLaserList;
+
 
     Ship playerShip ;
     Ship enemyShip;
@@ -67,8 +75,11 @@ public class GameScreen implements Screen {
 
 
         // create ships
-        playerShip = new Ship(2, 3, WORLD_WIDTH/2, WORLD_HEIGHT/4, 10, 10, playerShipTextureRegion,playerShieldTextureRegion );
-        enemyShip = new Ship(2, 1, WORLD_WIDTH/2, WORLD_HEIGHT*3/4, 10, 10, enemyShipTextureRegion,enemyShieldTextureRegion );
+        playerShip = new PlayerShip(2, 3, WORLD_WIDTH/2, WORLD_HEIGHT/4, 10, 10, playerShipTextureRegion,playerShieldTextureRegion, playerLaserTextureRegion, 0.4f,4f, 45, 0.5f );
+        enemyShip = new EnemyShip(2, 1, WORLD_WIDTH/2, WORLD_HEIGHT*3/4, 10, 10, enemyShipTextureRegion,enemyShieldTextureRegion, enemyLaserTextureRegion, 0.3f,5f, 50, 0.8f );
+
+        playerLaserList = new LinkedList<>();
+        enemyLaserList = new LinkedList<>();
 
         spriteBatch = new SpriteBatch();
 
@@ -86,6 +97,8 @@ public class GameScreen implements Screen {
         // scrolling background
         renderBackground(delta);
 
+        playerShip.update(delta);
+        enemyShip.update(delta);
         // enemy ship
         enemyShip.draw(spriteBatch);
 
@@ -93,6 +106,45 @@ public class GameScreen implements Screen {
         playerShip.draw(spriteBatch);
 
         // laser
+        // create new Lasers
+        if(playerShip.canFireLaser()){
+            Laser[] lasers = playerShip.fireLaser();
+            for (Laser laser : lasers){
+                playerLaserList.add(laser);
+
+            }
+        }
+
+        // enemy lasers
+        if(enemyShip.canFireLaser()){
+            Laser[] lasers = enemyShip.fireLaser();
+            for (Laser laser : lasers){
+                enemyLaserList.add(laser);
+
+            }
+        }
+
+        // remove old lasers
+
+        ListIterator<Laser> listIterator = playerLaserList.listIterator();
+        while (listIterator.hasNext()){
+            Laser laser = listIterator.next();
+            laser.draw(spriteBatch);
+            laser.yPosition += laser.movementSpeed*delta;
+            if(laser.yPosition>WORLD_HEIGHT){
+                listIterator.remove();
+            }
+        }
+
+        ListIterator<Laser> iterator = enemyLaserList.listIterator();
+        while (iterator.hasNext()){
+            Laser laser = iterator.next();
+            laser.draw(spriteBatch);
+            laser.yPosition -= laser.movementSpeed*delta;
+            if(laser.yPosition + laser.height < 0 ){
+                iterator.remove();
+            }
+        }
 
         // explosion
 
